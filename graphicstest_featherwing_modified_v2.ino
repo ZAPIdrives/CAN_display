@@ -27,7 +27,6 @@ int oil_temp = 0;
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial);
   
   Serial.println("HX8357D Test!");
   Serial.println("CAN receiver");
@@ -46,12 +45,11 @@ void setup() {
   
   //start the display
   tft.begin(); 
-  
-  //set the displays rotation
-  tft.setRotation(3);
+  tft.fillScreen(0x0000);            //clear display
+  tft.setRotation(3);                //set the displays rotation
 
-  Serial.print(F("Text                     "));
-  Serial.println(testText());
+  tft.setTextColor(0xFFFF, 0x0000); //white text, black background
+  tft.setTextSize(2);           //doubles the text size
   delay(500);
 }
 
@@ -63,6 +61,8 @@ void loop(void) {
     oil_temp = CANread(1349,4);
     if (i == 1){
       testText();
+      Serial.print("value of byte 4 in the code is: ");
+      Serial.println(oil_temp);
     }
   }
   delay(2000);
@@ -70,50 +70,40 @@ void loop(void) {
 
 unsigned long testText() {
   
-  tft.fillScreen(HX8357_BLACK);
+ // tft.fillScreen(HX8357_BLACK);
   unsigned long start = micros();
   tft.setCursor(0, 0);
-  tft.setTextColor(HX8357_WHITE);  
-  tft.setTextSize(1);
+//  tft.setTextColor(HX8357_WHITE);  
+ // tft.setTextSize(1);
   tft.println("Hello World!");
 
   tft.setCursor(50,100);
-  tft.setTextColor(HX8357_GREEN);
-  tft.setTextSize(3);
+ // tft.setTextColor(HX8357_GREEN);
+  //tft.setTextSize(3);
   tft.println("CAN ID: 0x545 ");
 
   //message within CAN_Id
   tft.setCursor(50,150);
-  tft.setTextColor(HX8357_WHITE);
-  //set display area to its own block
-  //canvas.fillScreen(HX8357_BLACK);
-  tft.setTextSize(2);
+  //tft.setTextColor(HX8357_WHITE);
+  //tft.setTextSize(2);
   tft.print("Message contains: ");
-  //tft.println(CANread(1349,4));
   tft.println(oil_temp);
+  Serial.print("byte 4 message on display is: 0x");
+  Serial.println(oil_temp);
 
   return micros() - start;
 }
 
 int CANread(int CAN_Id, int CAN_byte) {
   byte myArray[8];
-  int CAN_msg;
+  byte CAN_msg;
   
   // try to parse packet
   int packetSize = CAN.parsePacket();
   if (packetSize) {
-    /*
-    for (int i=0; i<8; i++) {
-      myArray[i] = (byte)0; //fill the array empty
-      } */
-    Serial.println("received a packet");
-    Serial.print("packet size is:");
-    Serial.println(packetSize);
     // received a packet
     if (CAN.packetId() == CAN_Id) {
       for (int i=0; i<8; i++) {
-      Serial.print("the value of 'i' is:");
-      Serial.println(i);
       myArray[i] = (byte)CAN.read(); //fill an array with the bytes from CAN_Id
       }
       }
