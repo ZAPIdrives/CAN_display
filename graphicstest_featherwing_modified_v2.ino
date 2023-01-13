@@ -20,10 +20,10 @@
 Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC, TFT_RST);
 
 //variables
-int oil_temp = 0;
+int my_temp = 0;
 
 //set dimensions of the canvas (width, height)
-//GFXcanvas1 canvas(30,20);
+//GFXcanvas1 canvas(100,20);
 
 void setup() {
   Serial.begin(115200);
@@ -47,25 +47,28 @@ void setup() {
   tft.begin(); 
   tft.fillScreen(0x0000);            //clear display
   tft.setRotation(3);                //set the displays rotation
-
   tft.setTextColor(0xFFFF, 0x0000); //white text, black background
   tft.setTextSize(2);           //doubles the text size
+  //canvas properties
+  //canvas.setFont(&FreeSerifBold18pt7b);
+  //canvas.setTextWrap(false);
+  
   delay(500);
 }
 
 
 void loop(void) {
-  int i = 8;
+  int i = 9;
   while(i>0){
     i--;
-    oil_temp = CANread(1349,4);
+    my_temp = CANread(1349,4);
     if (i == 1){
       testText();
       Serial.print("value of byte 4 in the code is: ");
-      Serial.println(oil_temp);
+      Serial.println(my_temp);
     }
   }
-  delay(2000);
+  delay(500);
 }
 
 unsigned long testText() {
@@ -73,23 +76,24 @@ unsigned long testText() {
  // tft.fillScreen(HX8357_BLACK);
   unsigned long start = micros();
   tft.setCursor(0, 0);
-//  tft.setTextColor(HX8357_WHITE);  
- // tft.setTextSize(1);
   tft.println("Hello World!");
 
   tft.setCursor(50,100);
- // tft.setTextColor(HX8357_GREEN);
-  //tft.setTextSize(3);
   tft.println("CAN ID: 0x545 ");
 
   //message within CAN_Id
+  /*
+  canvas.fillScreen(0); //clear canvas, not display
+  canvas.setCursor(260,148);
+  canvas.print("255");
+  tft.drawBitmap(260,148,canvas.getBuffer(),canvas.width(),canvas.height(),0xFFFF, 0x0000);
+  */
+  
+  
+  char buf[22]; //21 characters + NUL
+  sprintf(buf, "Message contains: %-3d", my_temp);
   tft.setCursor(50,150);
-  //tft.setTextColor(HX8357_WHITE);
-  //tft.setTextSize(2);
-  tft.print("Message contains: ");
-  tft.println(oil_temp);
-  Serial.print("byte 4 message on display is: 0x");
-  Serial.println(oil_temp);
+  tft.print(buf);
 
   return micros() - start;
 }
